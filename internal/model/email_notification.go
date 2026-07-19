@@ -8,7 +8,7 @@ type EmailNotification struct {
 	RecipientEmail    string
 	Subject           string
 	Body              string
-	Variables         []byte
+	Variables         map[string]interface{}
 	Status            string
 	Provider          string
 	ProviderMessageID *string
