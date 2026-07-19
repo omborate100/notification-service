@@ -19,7 +19,10 @@ func NewTemplateRepository(db *pgxpool.Pool) *TemplateRepository {
 	}
 }
 
-func (r *TemplateRepository) GetByTemplateKey(templateKey string) (*model.EmailTemplate, error) {
+func (r *TemplateRepository) GetByTemplateKey(
+	ctx context.Context,
+	templateKey string,
+) (*model.EmailTemplate, error) {
 
 	query := `
 	SELECT
@@ -34,13 +37,13 @@ func (r *TemplateRepository) GetByTemplateKey(templateKey string) (*model.EmailT
 		updated_at
 	FROM email_templates
 	WHERE template_key = $1
-	AND is_active = true
+	  AND is_active = TRUE
 	`
 
 	var template model.EmailTemplate
 
 	err := r.db.QueryRow(
-		context.Background(),
+		ctx,
 		query,
 		templateKey,
 	).Scan(
@@ -56,7 +59,7 @@ func (r *TemplateRepository) GetByTemplateKey(templateKey string) (*model.EmailT
 	)
 
 	if err != nil {
-		return nil, errors.New("template not found")
+		return nil, errors.New("email template not found")
 	}
 
 	return &template, nil

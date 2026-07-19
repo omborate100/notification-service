@@ -18,12 +18,13 @@ func NewNotificationRepository(db *pgxpool.Pool) *NotificationRepository {
 		db: db,
 	}
 }
+
 func (r *NotificationRepository) Create(
+	ctx context.Context,
 	notification *model.EmailNotification,
 ) (int64, error) {
 
 	variablesJSON, err := json.Marshal(notification.Variables)
-
 	if err != nil {
 		return 0, err
 	}
@@ -46,10 +47,10 @@ func (r *NotificationRepository) Create(
 	RETURNING id
 	`
 
-	var id int64
+	var notificationID int64
 
 	err = r.db.QueryRow(
-		context.Background(),
+		ctx,
 		query,
 		notification.TemplateID,
 		notification.RecipientEmail,
@@ -58,16 +59,17 @@ func (r *NotificationRepository) Create(
 		variablesJSON,
 		notification.Status,
 		notification.Provider,
-	).Scan(&id)
+	).Scan(&notificationID)
 
 	if err != nil {
 		return 0, err
 	}
 
-	return id, nil
+	return notificationID, nil
 }
 
 func (r *NotificationRepository) MarkSent(
+	ctx context.Context,
 	id int64,
 	providerMessageID string,
 ) error {
@@ -75,15 +77,15 @@ func (r *NotificationRepository) MarkSent(
 	query := `
 	UPDATE email_notifications
 	SET
-		status=$1,
-		provider_message_id=$2,
-		sent_at=NOW(),
-		updated_at=NOW()
-	WHERE id=$3
+		status = $1,
+		provider_message_id = $2,
+		sent_at = NOW(),
+		updated_at = NOW()
+	WHERE id = $3
 	`
 
 	_, err := r.db.Exec(
-		context.Background(),
+		ctx,
 		query,
 		model.StatusSent,
 		providerMessageID,
@@ -94,6 +96,7 @@ func (r *NotificationRepository) MarkSent(
 }
 
 func (r *NotificationRepository) MarkFailed(
+	ctx context.Context,
 	id int64,
 	errorMessage string,
 ) error {
@@ -101,14 +104,14 @@ func (r *NotificationRepository) MarkFailed(
 	query := `
 	UPDATE email_notifications
 	SET
-		status=$1,
-		error_message=$2,
-		updated_at=NOW()
-	WHERE id=$3
+		status = $1,
+		error_message = $2,
+		updated_at = NOW()
+	WHERE id = $3
 	`
 
 	_, err := r.db.Exec(
-		context.Background(),
+		ctx,
 		query,
 		model.StatusFailed,
 		errorMessage,
