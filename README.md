@@ -128,6 +128,3 @@ Deploy on Render.
 -   Metrics
 -   Swagger
 
-## License
-
-MIT
