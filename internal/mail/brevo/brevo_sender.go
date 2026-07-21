@@ -16,12 +16,21 @@ type Sender struct {
 
 	fromName  string
 	fromEmail string
+
+	replyToName  string
+	replyToEmail string
 }
 
 func NewSender(cfg *config.Config) *Sender {
+
 	log.Printf("Using Brevo as email sender")
 
-	addr, err := mail.ParseAddress(cfg.FromEmail)
+	fromAddr, err := mail.ParseAddress(cfg.FromEmail)
+	if err != nil {
+		panic(err)
+	}
+
+	replyAddr, err := mail.ParseAddress(cfg.ReplyToEmail)
 	if err != nil {
 		panic(err)
 	}
@@ -29,13 +38,18 @@ func NewSender(cfg *config.Config) *Sender {
 	return &Sender{
 		apiKey: cfg.BrevoAPIKey,
 
-		fromName:  addr.Name,
-		fromEmail: addr.Address,
+		fromName:  fromAddr.Name,
+		fromEmail: fromAddr.Address,
+
+		replyToName:  replyAddr.Name,
+		replyToEmail: replyAddr.Address,
 	}
 }
 
 type request struct {
 	Sender sender `json:"sender"`
+
+	ReplyTo sender `json:"replyTo,omitempty"`
 
 	To []receiver `json:"to"`
 
@@ -63,13 +77,16 @@ func (s *Sender) Send(
 	reqBody := request{
 
 		Sender: sender{
-			Name: s.fromName,
-
+			Name:  s.fromName,
 			Email: s.fromEmail,
 		},
 
-		Subject: subject,
+		ReplyTo: sender{
+			Name:  s.replyToName,
+			Email: s.replyToEmail,
+		},
 
+		Subject:     subject,
 		HTMLContent: body,
 	}
 
@@ -81,7 +98,6 @@ func (s *Sender) Send(
 	)
 
 	data, err := json.Marshal(reqBody)
-
 	if err != nil {
 		return err
 	}
@@ -103,7 +119,6 @@ func (s *Sender) Send(
 	client := &http.Client{}
 
 	resp, err := client.Do(req)
-
 	if err != nil {
 		return err
 	}
@@ -111,11 +126,7 @@ func (s *Sender) Send(
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-
-		return fmt.Errorf(
-			"brevo failed with status %d",
-			resp.StatusCode,
-		)
+		return fmt.Errorf("brevo failed with status %d", resp.StatusCode)
 	}
 
 	return nil

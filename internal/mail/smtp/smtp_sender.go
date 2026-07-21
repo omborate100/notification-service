@@ -13,6 +13,7 @@ type SMTPSender struct {
 	username  string
 	password  string
 	fromEmail string
+	ReplyToEmail string
 }
 
 func NewSMTPSender(cfg *config.Config) *SMTPSender {
@@ -29,6 +30,7 @@ func NewSMTPSender(cfg *config.Config) *SMTPSender {
 		username:  cfg.SMTPUsername,
 		password:  cfg.SMTPPassword,
 		fromEmail: cfg.FromEmail,
+		ReplyToEmail: cfg.ReplyToEmail,
 	}
 }
 
@@ -42,6 +44,7 @@ func (s *SMTPSender) Send(
 
 	message.SetHeader("From", s.fromEmail)
 	message.SetHeader("To", to)
+	message.SetHeader("Reply-To", s.ReplyToEmail)
 	message.SetHeader("Subject", subject)
 
 	message.SetBody("text/html", body)

@@ -22,6 +22,7 @@ type Config struct {
 	AppEnv string
 
 	BrevoAPIKey string
+	ReplyToEmail string
 }
 
 func Load() *Config {
@@ -47,5 +48,6 @@ func Load() *Config {
 		AppEnv: os.Getenv("APP_ENV"),
 
 		BrevoAPIKey: os.Getenv("BREVO_API_KEY"),
+		ReplyToEmail: os.Getenv("REPLY_TO_EMAIL"),
 	}
 }
