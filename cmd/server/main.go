@@ -11,14 +11,14 @@ import (
 	"notification-service/internal/repository"
 	"notification-service/internal/routes"
 	"notification-service/internal/service"
-	"notification-service/internal/smtp"
+	"notification-service/internal/mail"
 )
 
 func main() {
 
 	// Load configuration
 	cfg := config.Load()
-	
+
 	// Connect Database
 	database.Connect(cfg.DatabaseURL)
 	defer database.Close()
@@ -34,14 +34,14 @@ func main() {
 	templateRenderer := renderer.NewTemplateRenderer()
 
 	// SMTP Sender
-	smtpSender := smtp.NewSMTPSender(cfg)
+	sender := mail.NewSender(cfg)
 
 	// Service
 	emailService := service.NewEmailService(
 		templateRepo,
 		notificationRepo,
 		templateRenderer,
-		smtpSender,
+		sender,
 	)
 
 	// Handler

@@ -7,28 +7,28 @@ import (
 	"notification-service/internal/model"
 	"notification-service/internal/renderer"
 	"notification-service/internal/repository"
-	"notification-service/internal/smtp"
+	"notification-service/internal/mail"
 )
 
 type EmailService struct {
 	templateRepo     *repository.TemplateRepository
 	notificationRepo *repository.NotificationRepository
 	renderer         *renderer.TemplateRenderer
-	smtpSender       *smtp.SMTPSender
+	sender           mail.Sender
 }
 
 func NewEmailService(
 	templateRepo *repository.TemplateRepository,
 	notificationRepo *repository.NotificationRepository,
 	renderer *renderer.TemplateRenderer,
-	smtpSender *smtp.SMTPSender,
+	sender mail.Sender,
 ) *EmailService {
 
 	return &EmailService{
 		templateRepo:     templateRepo,
 		notificationRepo: notificationRepo,
 		renderer:         renderer,
-		smtpSender:       smtpSender,
+		sender:           sender,
 	}
 }
 
@@ -88,7 +88,7 @@ func (s *EmailService) SendEmail(
 	}
 
 	// Send email
-	err = s.smtpSender.Send(
+	err = s.sender.Send(
 		req.To,
 		subject,
 		body,

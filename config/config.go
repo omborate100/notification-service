@@ -19,6 +19,9 @@ type Config struct {
 	SMTPPassword string
 
 	FromEmail string
+	AppEnv string
+
+	BrevoAPIKey string
 }
 
 func Load() *Config {
@@ -41,5 +44,8 @@ func Load() *Config {
 		SMTPPassword: os.Getenv("SMTP_PASSWORD"),
 
 		FromEmail: os.Getenv("FROM_EMAIL"),
+		AppEnv: os.Getenv("APP_ENV"),
+
+		BrevoAPIKey: os.Getenv("BREVO_API_KEY"),
 	}
 }

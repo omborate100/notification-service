@@ -4,6 +4,7 @@ import (
 	"notification-service/config"
 
 	"gopkg.in/mail.v2"
+	"log"
 )
 
 type SMTPSender struct {
@@ -15,6 +16,7 @@ type SMTPSender struct {
 }
 
 func NewSMTPSender(cfg *config.Config) *SMTPSender {
+	log.Printf("Using SMTP as email sender")
 	port := 587
 
 	if cfg.SMTPPort == "465" {
