@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"notification-service/internal/model"
@@ -22,7 +23,7 @@ func (h *EmailHandler) SendEmail(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
-
+	log.Println("Starting of send email in handler")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return

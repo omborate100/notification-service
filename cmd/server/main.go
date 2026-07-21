@@ -6,32 +6,63 @@ import (
 
 	"notification-service/config"
 	"notification-service/internal/database"
+	"notification-service/internal/handler"
+	"notification-service/internal/renderer"
+	"notification-service/internal/repository"
+	"notification-service/internal/routes"
+	"notification-service/internal/service"
+	"notification-service/internal/smtp"
 )
 
 func main() {
 
+	// Load configuration
 	cfg := config.Load()
-
+	
+	// Connect Database
 	database.Connect(cfg.DatabaseURL)
-
 	defer database.Close()
 
-	http.HandleFunc("/health", healthHandler)
+	// Get DB Pool
+	db := database.GetDB()
 
-	log.Println("Server started on port :", cfg.AppPort)
+	// Repositories
+	templateRepo := repository.NewTemplateRepository(db)
+	notificationRepo := repository.NewNotificationRepository(db)
 
-	err := http.ListenAndServe(":"+cfg.AppPort, nil)
+	// Renderer
+	templateRenderer := renderer.NewTemplateRenderer()
+
+	// SMTP Sender
+	smtpSender := smtp.NewSMTPSender(cfg)
+
+	// Service
+	emailService := service.NewEmailService(
+		templateRepo,
+		notificationRepo,
+		templateRenderer,
+		smtpSender,
+	)
+
+	// Handler
+	emailHandler := handler.NewEmailHandler(emailService)
+
+	// Router
+	mux := http.NewServeMux()
+
+	routes.RegisterRoutes(
+		mux,
+		emailHandler,
+	)
+
+	log.Printf("Server started on port %s", cfg.AppPort)
+
+	err := http.ListenAndServe(
+		":"+cfg.AppPort,
+		mux,
+	)
 
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func healthHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json")
-
-	w.WriteHeader(http.StatusOK)
-
-	w.Write([]byte(`{"status":"UP"}`))
 }

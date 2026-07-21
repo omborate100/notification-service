@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -11,15 +12,20 @@ var DB *pgxpool.Pool
 
 func Connect(databaseURL string) {
 
-	pool, err := pgxpool.New(context.Background(), databaseURL)
-
+	config, err := pgxpool.ParseConfig(databaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = pool.Ping(context.Background())
+	// Disable prepared statement cache (required for PgBouncer/Supabase Pooler)
+	config.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 
+	pool, err := pgxpool.NewWithConfig(context.Background(), config)
 	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := pool.Ping(context.Background()); err != nil {
 		log.Fatal(err)
 	}
 
@@ -33,7 +39,6 @@ func GetDB() *pgxpool.Pool {
 }
 
 func Close() {
-
 	if DB != nil {
 		DB.Close()
 	}

@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"notification-service/internal/model"
 
@@ -26,8 +27,10 @@ func (r *NotificationRepository) Create(
 
 	variablesJSON, err := json.Marshal(notification.Variables)
 	if err != nil {
+		log.Println("Error marshalling variables:", err)
 		return 0, err
 	}
+	log.Println("Inserting notification with variables:", string(variablesJSON))
 
 	query := `
 	INSERT INTO email_notifications
@@ -56,12 +59,13 @@ func (r *NotificationRepository) Create(
 		notification.RecipientEmail,
 		notification.Subject,
 		notification.Body,
-		variablesJSON,
+		string(variablesJSON),
 		notification.Status,
 		notification.Provider,
 	).Scan(&notificationID)
 
 	if err != nil {
+		log.Println("Error inserting notification:", err)
 		return 0, err
 	}
 

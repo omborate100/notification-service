@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
-
+	"log"
 	"notification-service/internal/model"
 	"notification-service/internal/renderer"
 	"notification-service/internal/repository"
@@ -36,7 +36,7 @@ func (s *EmailService) SendEmail(
 	ctx context.Context,
 	req *model.EmailRequest,
 ) error {
-
+	log.Println("Starting to send email in service")
 	// Fetch template
 	emailTemplate, err := s.templateRepo.GetByTemplateKey(
 		ctx,
@@ -82,7 +82,7 @@ func (s *EmailService) SendEmail(
 		ctx,
 		notification,
 	)
-
+	log.Println("Created notification with ID:", notificationID)
 	if err != nil {
 		return err
 	}
@@ -93,6 +93,7 @@ func (s *EmailService) SendEmail(
 		subject,
 		body,
 	)
+	log.Println("Sent email to:", req.To)
 
 	if err != nil {
 
