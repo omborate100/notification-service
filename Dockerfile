@@ -1,24 +1,24 @@
-# ---------- Build Stage ----------
-FROM golang:1.25-alpine AS builder
+# # ---------- Build Stage ----------
+# FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+# WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
+# COPY go.mod go.sum ./
+# RUN go mod download
 
-COPY . .
+# COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o notification-service ./cmd/server
+# RUN CGO_ENABLED=0 GOOS=linux go build -o notification-service ./cmd/server
 
-# ---------- Runtime Stage ----------
-FROM alpine:latest
+# # ---------- Runtime Stage ----------
+# FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+# RUN apk --no-cache add ca-certificates
 
-WORKDIR /root/
+# WORKDIR /root/
 
-COPY --from=builder /app/notification-service .
+# COPY --from=builder /app/notification-service .
 
-EXPOSE 8082
+# EXPOSE 8082
 
-CMD ["./notification-service"]
+# CMD ["./notification-service"]
