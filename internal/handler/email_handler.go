@@ -71,6 +71,7 @@ func (h *EmailHandler) SendEmail(
 	)
 
 	if err != nil {
+		log.Printf("[ERROR] Email handler error for template '%s': %v\n", request.TemplateKey, err)
 
 		http.Error(
 			w,

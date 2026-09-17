@@ -126,7 +126,9 @@ func (s *Sender) Send(
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		return fmt.Errorf("brevo failed with status %d", resp.StatusCode)
+		buf := new(bytes.Buffer)
+		_, _ = buf.ReadFrom(resp.Body)
+		return fmt.Errorf("brevo failed with status %d: %s", resp.StatusCode, buf.String())
 	}
 
 	return nil

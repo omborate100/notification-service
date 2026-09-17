@@ -93,9 +93,9 @@ func (s *EmailService) SendEmail(
 		subject,
 		body,
 	)
-	log.Println("Sent email to:", req.To)
 
 	if err != nil {
+		log.Printf("[ERROR] Failed to send email to %s: %v\n", req.To, err)
 
 		// Update notification as FAILED
 		_ = s.notificationRepo.MarkFailed(
@@ -106,6 +106,8 @@ func (s *EmailService) SendEmail(
 
 		return err
 	}
+
+	log.Println("Sent email to:", req.To)
 
 	// Update notification as SENT
 	err = s.notificationRepo.MarkSent(
