@@ -93,3 +93,70 @@ func (h *EmailHandler) SendEmail(
 		"message": "Email sent successfully",
 	})
 }
+
+func (h *EmailHandler) SendBulkEmail(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
+	log.Println("Starting of send bulk email in handler")
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var request model.BulkEmailRequest
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(
+			w,
+			"Invalid request payload",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if request.TemplateKey == "" {
+		http.Error(
+			w,
+			"template_key is required",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if len(request.Recipients) == 0 {
+		http.Error(
+			w,
+			"at least one recipient is required in recipients list",
+			http.StatusBadRequest,
+		)
+		return
+	}
+
+	if request.Variables == nil {
+		request.Variables = map[string]interface{}{}
+	}
+
+	response, err := h.emailService.SendBulkEmail(
+		r.Context(),
+		&request,
+	)
+	if err != nil {
+		log.Printf("[ERROR] Bulk email handler error for template '%s': %v\n", request.TemplateKey, err)
+		http.Error(
+			w,
+			err.Error(),
+			http.StatusInternalServerError,
+		)
+		return
+	}
+
+	w.Header().Set(
+		"Content-Type",
+		"application/json",
+	)
+	w.WriteHeader(http.StatusOK)
+
+	json.NewEncoder(w).Encode(response)
+}

@@ -17,6 +17,11 @@ func RegisterRoutes(
 	)
 
 	mux.HandleFunc(
+		"/api/v1/email/bulk",
+		emailHandler.SendBulkEmail,
+	)
+
+	mux.HandleFunc(
 		"/health",
 		func(w http.ResponseWriter, r *http.Request) {
 
